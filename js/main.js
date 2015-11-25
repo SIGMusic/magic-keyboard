@@ -47,7 +47,7 @@ $(document).ready(function(){
     // adding the renderer to the world
     world.add(renderer);
     // what happens at every iteration step? We render (show the world)
-    world.subscribe("step",function(){
+    world.on("step",function(){
             world.render();
     });
     // this is the default gravity
@@ -119,7 +119,7 @@ $(document).ready(function(){
     //     } 
     // })
     // handling timestep
-    Physics.util.ticker.subscribe(function(time,dt){
+    Physics.util.ticker.on(function(time,dt){
             world.step(time);
             removeOffScreen()
     });

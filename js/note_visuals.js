@@ -9,6 +9,8 @@ function spawnNote(note, size, x) {
 
     var rand_x = (Math.random()*2 - 1)/100;
 
+    var hue = px/width; 
+    // console.log(hue)
     var body = Physics.body("circle",{
             x: px,
             y: py,
@@ -16,8 +18,8 @@ function spawnNote(note, size, x) {
             styles: {
                 strokeStyle: '#123456',
                 lineWidth: 0,
-                fillStyle: '#542437',
-                angleIndicator: 'white'
+                fillStyle: 'hsl(' + hue*360 + ', 100%, 50%)',
+                // angleIndicator: 'white'
             },
             radius: side_len,
             restitution:0.5,
