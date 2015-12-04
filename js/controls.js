@@ -47,13 +47,29 @@ document.onkeyup = function(event) {
 
 	spawnNote(world, release_time, keyDict(midi));
 
-	console.log(world.getBodies());
+	// console.log(world.getBodies());
 
 	// reset variables
     map[e].pressed = false;
     map[e].held_length = 0;
 }
 
+function collision_sound(pos) {
+    // console.log(pos.y);
+
+    var height_ratio = pos.y / height;
+    var width_ratio = pos.x / width;
+    var offset = 200; // lowest freq
+
+    var freq = width_ratio * (400) + offset;
+
+    console.log(freq);
+
+    // var release_time = Math.min(400 + map[e].held_length * 40, 3000);
+    // console.log(release_time);
+    var tempsynth = T("sin", {freq:freq, mul:0.05});
+    var env = T("perc", {r:400}, tempsynth).bang().play();
+}
 
 function getFrequency(midi_code) {
 
@@ -134,7 +150,7 @@ function midiDict(keycode, offset) {
             break;
 
         case 57:
-            midi += 12;
+            midi += 13;
             break;
 
 

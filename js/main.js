@@ -79,45 +79,38 @@ $(document).ready(function(){
     //         ]
     // }));
 
+    
+
     // bodies will react to forces such as gravity
     world.add(Physics.behavior("body-impulse-response"));
     // enabling collision detection among bodies
     world.add(Physics.behavior("body-collision-detection"));
     world.add(Physics.behavior("sweep-prune"));
-    //  $("#canvasid").click(function(e){
-    //     // checking canvas coordinates for the mouse click
-    //     var offset = $(this).offset();
-    //     var px = e.pageX - offset.left;
-    //     var py = e.pageY - offset.top;
-    //     // this is the way physicsjs handles 2d vectors, similar at Box2D's b2Vec
-    //     var mousePos = Physics.vector();
-    //     mousePos.set(px,py);
-    //     // finding a body under mouse position
-    //     var body = world.findOne({
-    //         $at: mousePos
-    //     })
-    //     // there isn't any body under mouse position, going to create a new box
-    //     if(!body){
-    //         world.add(Physics.body("convex-polygon",{
-    //                 x: px,
-    //                 y: py,
-    //                 vertices: [
-    //                     {x:0, y:0},
-    //                     {x:0, y:60},
-    //                     {x:60, y:60},
-    //                     {x:60, y:0}
 
-    //                 ],
-    //                 restitution:0.5,
-    //         }).applyForce(Physics.vector(0,-0.05)));
+    // on collisions
+    // If you want to subscribe to collision pairs
+    // emit an event for each collision pair
+    world.on('collisions:detected', function( data ){
+        // console.log('collided');
+        var c;
+        for (var i = 0, l = data.collisions.length; i < l; i++){
+            c = data.collisions[ i ];
+            world.emit('collision-pair', {bodyA: c.bodyA, bodyB: c.bodyB});
+        }
+    });
+
+        // subscribe to collision pair
+    world.on('collision-pair', function( data ){
+        // data.bodyA; data.bodyB...
+        // var col_pair = '(' + data.bodyA.state.pos + '), (' + data.bodyB.state.pos + ')';
+        // console.log('collision ' + col_pair);
+        // console.log(col_pair);
+
+        //call a collision sound generator
+        collision_sound(data.bodyA.state.pos);
+    });
 
 
-    //     }
-    //     else{
-    //         // there is a body under mouse position, let's remove it
-    //         world.removeBody(body);
-    //     } 
-    // })
     // handling timestep
     Physics.util.ticker.on(function(time,dt){
             world.step(time);
