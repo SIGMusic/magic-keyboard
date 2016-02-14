@@ -12,10 +12,60 @@ for (var i = 0; i < 256; i++) {
 	map[i] = {pressed: false, held_length: 0};
 }
 
+//Start midi stuff
+var m = null; // m = MIDIAccess object for you to make calls on
+var data;
+if(navigator.requestMIDIAccess !== undefined){
+
+    navigator.requestMIDIAccess().then(
+
+        function onFulfilled(access){
+            midi = access;
+            
+            var inputs = midi.inputs.values();
+            for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
+               // each time there is a midi message call the onMIDIMessage function
+                  input.value.onmidimessage = onMIDIMessage;
+            }
+        },
+
+        function onRejected(e){
+
+        }
+    );
+}
+
+function onMIDIMessage(message) {
+    data = message.data; // this gives us our [command/channel, note, velocity] data.
+    //console.log('MIDI data', data); // MIDI data [144, 63, 73]
+    console.log("Key Number", data[1]);
+    var key = data[1];
+    var strength = data[2];
+    if(strength > 0){
+        map[key].held_length += strength * .25;
+        map[key].pressed = true;
+
+        var freq = getFrequency(key);
+        console.log(freq);
+        var release_time = Math.min(400 + map[key].held_length * 40, 3000);
+        // console.log(release_time);
+        var tempsynth = T("sin", {freq:freq, mul:0.25});
+        var env = T("perc", {r:release_time}, tempsynth).bang().play();
+        spawnNote(world, release_time, key);
+    }
+    else{ //strength == 0
+
+        // reset variables
+        map[key].pressed = false;
+        map[key].held_length = 0;
+    }
+}
+//End midi stuff
+
+
 document.onkeydown = function(event) {
     event = event || window.event;
     var e = event.keyCode;
-
     // only play once let go
 	// held down
 	map[e].held_length++;
@@ -25,20 +75,21 @@ document.onkeydown = function(event) {
     if (e == 32) {
 
     }
-	// console.log(map[e].held_length);
+	//console.log(map[e].held_length);
     
 }
 document.onkeyup = function(event) {
     event = event || window.event;
     var e = event.keyCode;
-
     var midi = midiDict(e, BASE);
     //didn't press a good key
+    //console.log(midi);
     if (!midi) return;
 
+    //console.log(midi);
     var freq = getFrequency(midi);
+    console.log(freq);
     var release_time = Math.min(400 + map[e].held_length * 40, 3000);
-    // console.log(release_time);
     var tempsynth = T("sin", {freq:freq, mul:0.25});
     var env = T("perc", {r:release_time}, tempsynth).bang().play();
     // synth.def.env = env;
@@ -54,6 +105,7 @@ document.onkeyup = function(event) {
     map[e].held_length = 0;
 }
 
+
 function collision_sound(pos) {
     // console.log(pos.y);
 
@@ -63,7 +115,7 @@ function collision_sound(pos) {
 
     var freq = width_ratio * (400) + offset;
 
-    console.log(freq);
+    //console.log(freq);
 
     // var release_time = Math.min(400 + map[e].held_length * 40, 3000);
     // console.log(release_time);
@@ -84,93 +136,11 @@ function getFrequency(midi_code) {
 }
 
 function midiDict(keycode, offset) {
-    var midi = offset;
-
-    switch(keycode){
-        //q 81 c3
-        case 81:
-            midi += 0;
-            break;
-
-        case 50:
-            midi += 1;
-            break;
-
-        //w 87
-        case 87:
-            midi += 2;
-            break;
-
-        case 51:
-            midi += 3;
-            break;
-
-
-        //e 69
-        case 69:
-            midi += 4;
-            break;
-        //r 82
-        case 82:
-            midi += 5;
-            break;
-
-        case 53:
-            midi += 6;
-            break;
-
-
-        //t 84
-        case 84:
-            midi += 7;
-            break;
-
-        case 54:
-            midi += 8;
-            break;
-
-
-        //y 89
-        case 89:
-            midi += 9;
-            break;
-
-        case 55:
-            midi += 10;
-            break;
-
-
-        //u 85
-        case 85:
-            midi += 11;
-            break;
-        //i 73
-        case 73:
-            midi += 12;
-            break;
-
-        case 57:
-            midi += 13;
-            break;
-
-
-        //o 79
-        case 79:
-            midi += 14;
-            break;
-
-        case 48:
-            midi += 15;
-            break;
-        //p 80
-        case 80:
-            midi += 16;
-            break;
-        default:
-            return false;
-            break
-    }
-    return midi;
+    var midi = offset; //offset == base == 60
+    //console.log(keycode);
+    if(keycode < 48 || keycode > 57) return null; //0 is 48, 9 is 57
+    
+    return keycode; //gives freq 220, c3 on keyboard
 }
 
 function keyDict(midi) {

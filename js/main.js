@@ -26,6 +26,9 @@ var height = window.innerHeight-100;
 var possible_coords = []
 // console.log(possible_y);
 
+
+    
+
 $(document).ready(function(){
     // world declaration
     world = Physics();
@@ -107,7 +110,7 @@ $(document).ready(function(){
         // console.log(col_pair);
 
         //call a collision sound generator
-        collision_sound(data.bodyA.state.pos);
+        //collision_sound(data.bodyA.state.pos); //adds collision sound
     });
 
 
